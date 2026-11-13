@@ -15,7 +15,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BitChord"
+rootProject.name = "BeDivine"
 include(":shared")
 include(":sharedUi")
 
