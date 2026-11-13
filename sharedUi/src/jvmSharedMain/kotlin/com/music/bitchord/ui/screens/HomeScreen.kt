@@ -502,7 +502,7 @@ private fun HomeTitle(
 private const val LOGO_TO_FONT = 0.9f
 
 /** ic_logo's viewport, 730 x 484. */
-private const val LOGO_ASPECT = 730f / 484f
+private const val LOGO_ASPECT = 831f / 1418f
 
 /**
  * Shared by the home feed, Explore and Library so headings line up across tabs.
