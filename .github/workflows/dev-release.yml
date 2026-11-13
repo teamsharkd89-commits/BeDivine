@@ -1,4 +1,6 @@
-# Build the dev APK and publish it as a GitHub release, the way DivineDeck does.
+# Build the fast dev APK (release build type: R8 + baseline profile, signed
+# with the debug keystore so it installs over the previous BeDivine Dev) and
+# publish it as a GitHub release, the way DivineDeck does.
 #
 # Why this exists: uploads to a GitHub release cannot be done from this VM
 # (uploads.github.com rejects the PAT surrogate with 401), so the release and
@@ -49,15 +51,15 @@ jobs:
 
       - run: chmod +x gradlew
 
-      - name: Build the dev APK
-        run: ./gradlew assembleDevDebug
+      - name: Build the fast dev APK (release + R8)
+        run: ./gradlew assembleDevRelease -PbedivineDevRelease
 
       - name: Prepare release files
         run: |
           mkdir -p release
-          cp app/build/outputs/apk/dev/debug/app-dev-arm64-v8a-debug.apk release/BeDivine-dev-debug-arm64.apk
-          cp app/build/outputs/apk/dev/debug/app-dev-universal-debug.apk release/BeDivine-dev-debug-universal.apk
-          (cd release && sha256sum BeDivine-dev-debug-*.apk > SHA256SUMS.txt)
+          cp app/build/outputs/apk/dev/release/app-dev-arm64-v8a-release.apk release/BeDivine-dev-release-arm64.apk
+          cp app/build/outputs/apk/dev/release/app-dev-universal-release.apk release/BeDivine-dev-release-universal.apk
+          (cd release && sha256sum BeDivine-dev-release-*.apk > SHA256SUMS.txt)
           ls -lh release/
 
       - name: Publish release with the APKs
@@ -66,15 +68,18 @@ jobs:
           tag_name: dev-${{ github.run_number }}
           name: BeDivine dev (build ${{ github.run_number }})
           body: |
-            APK debug de BeDivine, compilado en GitHub Actions desde ${{ github.sha }}.
+            APK de BeDivine, compilado en GitHub Actions desde ${{ github.sha }}.
 
-            Instala **BeDivine-dev-debug-arm64.apk** en tu teléfono (Redmi Note 10S).
+            Build release (optimizado con R8, con el perfil de arranque): más
+            rápido y más fluido que el debug. No cambia nada visual.
+
+            Instala **BeDivine-dev-release-arm64.apk** en tu teléfono (Redmi Note 10S).
             La universal sirve para cualquier otro teléfono.
 
             Se instala como "BeDivine Dev", una app aparte, y cada release nueva se
             instala encima de la anterior sin desinstalar.
           files: |
-            release/BeDivine-dev-debug-arm64.apk
-            release/BeDivine-dev-debug-universal.apk
+            release/BeDivine-dev-release-arm64.apk
+            release/BeDivine-dev-release-universal.apk
             release/SHA256SUMS.txt
           prerelease: true

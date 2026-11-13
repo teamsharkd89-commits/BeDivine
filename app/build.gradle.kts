@@ -189,7 +189,13 @@ android {
             )
             // Null without a keystore to sign with: the build then produces
             // app-release-unsigned.apk instead of failing outright.
+            // BeDivine: the dev flavour's release build is our fast sideload
+            // build — it signs with the debug keystore (same key as the dev
+            // debug APKs, so it installs over them) when the build is run
+            // with -PbedivineDevRelease. Prod is untouched: without the
+            // property it stays unsigned when no release keystore exists.
             signingConfig = signingConfigs.findByName("release")
+                ?: if (project.hasProperty("bedivineDevRelease")) signingConfigs.getByName("debug") else null
         }
         /*
          * The release build, installable next to the dev and prod apps: same R8,
