@@ -22,6 +22,11 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      # Persistent debug keystore, decoded below. Pointed at explicitly:
+      # AGP does not pick a keystore up from ~/.android, so without this
+      # every build signs with a fresh throwaway key.
+      BEDIVINE_DEBUG_KEYSTORE: ${{ github.workspace }}/debug.keystore
     steps:
       - uses: actions/checkout@v4
 
@@ -40,14 +45,16 @@ jobs:
           echo "LISTEN_TOGETHER_SERVER=${{ secrets.LISTEN_TOGETHER_SERVER }}" >> local.properties
 
       # Persistent debug key, so this APK installs over the previous dev
-      # builds. Forks get no secrets; AGP then makes a throwaway key itself.
+      # builds. Forks get no secrets; the build then uses AGP's throwaway
+      # debug key instead (see build.gradle.kts: without BEDIVINE_DEBUG_KEYSTORE
+      # the default debug key is untouched).
       - name: Write the debug keystore
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
         run: |
           [ -n "$DEBUG_KEYSTORE_BASE64" ] || exit 0
-          mkdir -p ~/.android
-          echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > ~/.android/debug.keystore
+          echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > "$GITHUB_WORKSPACE/debug.keystore"
+          ls -l "$GITHUB_WORKSPACE/debug.keystore"
 
       - run: chmod +x gradlew
 

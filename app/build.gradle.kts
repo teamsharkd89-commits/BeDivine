@@ -158,6 +158,22 @@ android {
                 keyPassword = signing.getProperty("keyPassword")
             }
         }
+        // BeDivine: point the debug config at the persistent debug keystore
+        // explicitly when BEDIVINE_DEBUG_KEYSTORE names an existing file
+        // (decoded from the DEBUG_KEYSTORE_BASE64 secret by the workflows).
+        // AGP does not pick the keystore up from ~/.android — DivineDeck
+        // learned the same lesson — so without this every CI build signs
+        // with a fresh throwaway key and cannot install over the previous
+        // APK. Without the variable the default debug key is untouched.
+        System.getenv("BEDIVINE_DEBUG_KEYSTORE")?.let { rootProject.file(it) }
+            ?.takeIf { it.exists() }?.let { keystore ->
+                getByName("debug").apply {
+                    storeFile = keystore
+                    storePassword = "android"
+                    keyAlias = "androiddebugkey"
+                    keyPassword = "android"
+                }
+            }
     }
 
     buildTypes {
